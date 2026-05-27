@@ -1916,5 +1916,155 @@
         checkDistributionStatus();
     }
 </script>
+
+<!-- ════════════════════════════════════════
+     FLOATING TELEGRAM BUTTON
+════════════════════════════════════════ -->
+<a id="telegramBtn"
+   href="https://t.me/+yKTzqU341V80NWU0"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Join our Telegram group"
+   title="Join Telegram">
+    <i class="ph-fill ph-telegram-logo"></i>
+</a>
+
+<style>
+    #telegramBtn {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1000;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: #020617;
+        background: linear-gradient(135deg, #059669, #34d399);
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.35),
+                    0 4px 16px rgba(0, 0, 0, 0.4);
+        cursor: grab;
+        text-decoration: none;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    #telegramBtn:hover {
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.55),
+                    0 6px 20px rgba(0, 0, 0, 0.45);
+        transform: scale(1.08);
+    }
+    #telegramBtn:active {
+        cursor: grabbing;
+        transform: scale(0.96);
+    }
+    #telegramBtn.is-dragging {
+        cursor: grabbing;
+        box-shadow: 0 0 35px rgba(16, 185, 129, 0.6),
+                    0 8px 28px rgba(0, 0, 0, 0.5);
+        transform: scale(1.1);
+        transition: box-shadow 0.15s ease;
+    }
+</style>
+
+<script>
+(function () {
+    const btn = document.getElementById('telegramBtn');
+    let isDragging = false;
+    let hasDragged  = false;
+    let startX, startY, startLeft, startTop;
+
+    /* Convert bottom/right anchor to top/left for free movement */
+    function initTopLeft() {
+        const rect = btn.getBoundingClientRect();
+        btn.style.top    = rect.top  + 'px';
+        btn.style.left   = rect.left + 'px';
+        btn.style.bottom = 'auto';
+        btn.style.right  = 'auto';
+    }
+
+    function clamp(val, min, max) {
+        return Math.min(Math.max(val, min), max);
+    }
+
+    function applyPosition(clientX, clientY) {
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        const MARGIN = 8;
+        const newLeft = clamp(clientX - startX + startLeft, MARGIN, W - btn.offsetWidth  - MARGIN);
+        const newTop  = clamp(clientY - startY + startTop,  MARGIN, H - btn.offsetHeight - MARGIN);
+        btn.style.left = newLeft + 'px';
+        btn.style.top  = newTop  + 'px';
+    }
+
+    /* ── MOUSE ── */
+    btn.addEventListener('mousedown', function (e) {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        initTopLeft();
+        isDragging = true;
+        hasDragged  = false;
+        startX    = e.clientX;
+        startY    = e.clientY;
+        startLeft = btn.offsetLeft;
+        startTop  = btn.offsetTop;
+        btn.classList.add('is-dragging');
+    });
+
+    document.addEventListener('mousemove', function (e) {
+        if (!isDragging) return;
+        if (Math.abs(e.clientX - startX) > 4 || Math.abs(e.clientY - startY) > 4) hasDragged = true;
+        applyPosition(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mouseup', function () {
+        if (!isDragging) return;
+        isDragging = false;
+        btn.classList.remove('is-dragging');
+        /* Block the click that fires immediately after a drag */
+        if (hasDragged) {
+            const block = function (ev) {
+                ev.preventDefault();
+                ev.stopImmediatePropagation();
+                btn.removeEventListener('click', block, true);
+            };
+            btn.addEventListener('click', block, true);
+        }
+    });
+
+    /* ── TOUCH ── */
+    btn.addEventListener('touchstart', function (e) {
+        const t = e.touches[0];
+        initTopLeft();
+        isDragging = true;
+        hasDragged  = false;
+        startX    = t.clientX;
+        startY    = t.clientY;
+        startLeft = btn.offsetLeft;
+        startTop  = btn.offsetTop;
+        btn.classList.add('is-dragging');
+    }, { passive: true });
+
+    btn.addEventListener('touchmove', function (e) {
+        if (!isDragging) return;
+        e.preventDefault();   /* prevent page scroll while dragging */
+        const t = e.touches[0];
+        if (Math.abs(t.clientX - startX) > 4 || Math.abs(t.clientY - startY) > 4) hasDragged = true;
+        applyPosition(t.clientX, t.clientY);
+    }, { passive: false });
+
+    btn.addEventListener('touchend', function (e) {
+        if (!isDragging) return;
+        isDragging = false;
+        btn.classList.remove('is-dragging');
+        if (hasDragged) e.preventDefault();   /* suppress tap-navigation after a drag */
+    });
+})();
+</script>
+
 </body>
 </html>
